@@ -4,18 +4,18 @@ import { Game, STATE } from '@tictactoe/game';
 @Injectable()
 export class AppService {
 
-  games: Map<string, Game>; // id: game
+  games: Map<string, Game> = new Map<string, Game>(); // id: game
 
   isPlaying(playerId: string): boolean {
-    this.games.forEach(game => {
+    for (const [id, game] of this.games) {
       if (game.checkForPlayer(playerId))
         return true;
-    })
+    }
     return false;
   }
 
-  getGame(gameId: string): Game {
-    if (!this.games.has(gameId)) return null;
+  getGame(gameId: string): Game | {} {
+    if (!this.games.has(gameId)) return {};
     return this.games.get(gameId);
   }
 
@@ -32,20 +32,23 @@ export class AppService {
     return game;
   }
 
-  next(gameId: string) {
-    const game = this.games.get(gameId);
-    return game.turn % 2 === 0 ? game.xPlayerId : game.oPlayerId;
+  next(gameId: string): 'X' | 'O' {
+    if (this.games.has(gameId))
+      return this.games.get(gameId).next();
   }
 
-  getWinningSquares(gameId: string) {
-
+  isPlayerNext(gameId: string, playerId: string): boolean {
+    if (this.games.has(gameId)) {
+      const game = this.games.get(gameId);
+      return (game.xPlayerId === playerId && game.next() === 'X') || (game.oPlayerId === playerId && game.next() === 'O');
+    }
   }
 
   getGameForPlayer(playerId: string): Game {
-    this.games.forEach(game => {
+    for (const [id, game] of this.games) {
       if (game.checkForPlayer(playerId))
         return game;
-    })
+    }
     return null;
   }
 
@@ -57,12 +60,11 @@ export class AppService {
   }
 
   createGame(playerId: string): Game {
-    if (!this.isPlaying(playerId)) {
-      const game = new Game(playerId);
-      this.games.set(game.id, game);
-      return game;
-    }
-    return null;
+    const prevGame = this.getGameForPlayer(playerId);
+    if (prevGame) this.games.delete(prevGame.id);
+    const game = new Game(playerId);
+    this.games.set(game.id, game);
+    return game;
   }
 
   makeTurn(gameId: string, squareNumber: number) {

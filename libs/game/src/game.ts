@@ -33,7 +33,7 @@ export class Game {
   oPlayerId: string;
   turn: number;
   squares: Square[];
-  state: STATE;
+  state: string;
   winningSquares?: number[];
 
   constructor(playerId: string) {
@@ -46,6 +46,26 @@ export class Game {
       this.xPlayerId = playerId;
     else
       this.oPlayerId = playerId;
+  }
+
+  static fromObject(obj) {
+    const game = new Game('');
+    game.id = obj.id;
+    game.turn = obj.turn;
+    game.state = obj.state;
+    game.squares = obj.squares;
+    game.xPlayerId = obj.xPlayerId;
+    game.oPlayerId = obj.oPlayerId;
+    game.winningSquares = obj.winningSquares;
+    return game;
+  }
+
+  next() {
+    return this.turn % 2 === 0 ? 'X' : 'O';
+  }
+
+  isFull() {
+    return !!this.xPlayerId && !!this.oPlayerId;
   }
 
   checkForPlayer(playerId: string) {

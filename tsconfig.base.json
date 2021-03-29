@@ -15,7 +15,8 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@tictactoe/game": ["libs/game/src/index.ts"]
+      "@tictactoe/game": ["libs/game/src/index.ts"],
+      "@tictactoe/config": ["libs/config/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

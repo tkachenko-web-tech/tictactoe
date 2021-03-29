@@ -10,8 +10,9 @@ import {
 import { AppService } from './app.service';
 import { Server, Socket } from 'socket.io';
 import { STATE } from '@tictactoe/game';
+import { WS_PORT } from '@tictactoe/config';
 
-@WebSocketGateway(3332, { transports: ['websocket'] })
+@WebSocketGateway(WS_PORT, { transports: ['websocket'], origins: ['*'] })
 export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer() server: Server;
@@ -27,7 +28,6 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
     const { eventType } = data;
     if (eventType === 'JOIN') {
       const { gameId, playerId } = data;
-
       client.join(gameId);
       client.to(gameId).emit(JSON.stringify({ eventType: 'JOIN', playerId }));
     } else if (eventType === 'TURN') {
@@ -38,7 +38,7 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      if (this.appService.next(gameId) !== playerId)
+      if (!this.appService.isPlayerNext(gameId, playerId))
         return;
 
       const game = this.appService.makeTurn(gameId, squareNumber);
@@ -56,11 +56,16 @@ export class GamesGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   handleConnection(client: Socket): any {
-    console.log(`Client ${client.id} connected to ${client.rooms[0]}.`);
+    console.log(`Client ${client.id} connected to ${client.rooms}.`);
   }
 
   handleDisconnect(client: Socket): any {
-    console.log(`Client ${client.id} disconnected from ${client.rooms[0]}.`);
+    Object.keys(client.rooms).forEach(key => {
+      this.server.to(client.rooms[key]).emit('msg', JSON.stringify({
+        eventType: 'DISCONNECT'
+      }))
+    })
+    console.log(`Client ${client.id} disconnected from ${client.rooms}.`);
   }
 
 }

@@ -18,6 +18,7 @@
   "projects": {
     "frontend": { "tags": [] },
     "backend": { "tags": [] },
-    "game": { "tags": [] }
+    "game": { "tags": [] },
+    "config": { "tags": [] }
   }
 }
